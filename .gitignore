@@ -1,0 +1,7 @@
+.env
+.venv
+.vscode
+Pipfile.lock
+__pycache__
+.coverage
+*.log

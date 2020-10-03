@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+pytest-sugar = "*"
+pytest-cov = "*"
+bumpversion = "*"
+autopep8 = "*"
+pylint = "*"
+
+[scripts]
+migrate = "python run.py"
+
+[packages]
+requests = "*"
+
+[requires]
+python_version = "3"
