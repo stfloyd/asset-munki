@@ -100,6 +100,9 @@ class SnipeITClient(APIClient):
     def get_hardware(self):
         return self.get_dto(dto.Asset)
     
+    def get_companies(self):
+        return self.get_dto(dto.Company)
+    
     def post_model(self, model_dto):
         return self.post_dto(model_dto, dto.Model)
 
@@ -153,6 +156,9 @@ class SnipeITClient(APIClient):
             return dto.Asset.from_dict(payload)
         except Exception as e:
             raise SnipeITAssetNotFoundError(f'Could not find hardware with serial: {serial}') from e
+    
+    def payload_from_mr(data, mr_data, is_new=True):
+        pass
 
     def _get_request_headers(self):
         return {

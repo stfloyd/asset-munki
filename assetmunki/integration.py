@@ -3,12 +3,10 @@ import os
 from . import AssetMunki
 from .exception import (
     ErrorFormatter,
-    AssetMunkiError,
     IntegrationError,
     IntegrationInitializationError,
     InvalidIntegrationError,
     IntegrationTypeError,
-    IntegrationRegistrationError,
     DuplicateIntegrationError
 )
 
@@ -28,6 +26,7 @@ class Integration(object):
     def init_assetmunki(self, assetmunki):
         self.check_valid(assetmunki)
         assetmunki.integrations[self.name] = self
+        self.assetmunki = assetmunki
 
     def check_valid(self, assetmunki):
         if not isinstance(assetmunki, AssetMunki):

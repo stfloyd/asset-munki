@@ -3,16 +3,16 @@
 import os
 import sys
 import csv
-import json
-import math
 from datetime import datetime
-import urllib3
 import requests
-import shutil
 import logging
 
 from assetmunki import AssetMunki
-from assetmunki.util import format_bytes
+from assetmunki.cli import cli
+from assetmunki.util import format_bytes,\
+    get_filename_for_model_img,\
+    download_images_from_serials,\
+    get_category_name
 from assetmunki.ext.munki import MunkiReportIntegration
 from assetmunki.ext.snipeit import SnipeIntegration, dto as snipe_dtos
 from assetmunki.ext.snipeit.exceptions import SnipeITAssetNotFoundError
@@ -79,38 +79,6 @@ def snipeit_payload_from_mr(snipeit_data, mr_data, is_new=True):
         del merge['asset_tag']
     
     return {**snipeit_data, **merge}
-
-
-def get_filename_for_model_img(serial):
-    last4 = serial[len(serial)-4:]
-    dl_url = f'https://km.support.apple.com/kb/securedImage.jsp?configcode={last4}&size=960x960'
-    r = requests.get(dl_url, allow_redirects=True)
-    return r.url.split('/')[-1]
-
-
-def download_images_from_serials(mac_serials):
-    # https://km.support.apple.com/kb/securedImage.jsp?configcode=[[last 4 of serial]]&size=960x960
-    finished = []
-    for serial in mac_serials:
-        last4 = serial[len(serial)-4:]
-        if last4 in finished:
-            continue
-        dl_url = f'https://km.support.apple.com/kb/securedImage.jsp?configcode={last4}&size=960x960'
-        r = requests.get(dl_url, allow_redirects=True)
-        filename = r.url.split('/')[-1]
-        open(f'{PRODUCT_IMG_SAVE_ROOT}{filename}', 'wb').write(r.content)
-        finished.append(last4)
-    logger.info(f'Fetched {len(finished)} images for model(s) @ \'{PRODUCT_IMG_SAVE_ROOT}\'')
-
-
-def get_category_name(machine_name):
-    machine_name_l = machine_name.lower()
-    if machine_name_l == 'imac' or machine_name_l == 'mac mini':
-        return 'desktops'
-    elif machine_name_l == 'macbook' or machine_name_l == 'macbook pro' or machine_name_l == 'macbook air':
-        return 'laptops'
-    else:
-        return 'unknown'
 
 
 def run_migration():
@@ -238,8 +206,12 @@ def match_asset_tags(filename):
             continue
 
 
-if __name__ == '__main__':
+def main(argv):
+    ''' Main entry point into the program '''
+
     logger.info('\nAsset-Munki Utility\nBy Steven Floyd\n')
+
+    (args, parser) = cli(argv)
 
     try:
         assetmunki = create_assetmunki()
@@ -249,13 +221,14 @@ if __name__ == '__main__':
     logger.info('Enabled integrations:')
     for i in assetmunki.integrations:
         logger.info (f'\t{i}')
-    logger.info('\n------------------------------------------------------------')
 
+    logger.info('\n------------------------------------------------------------')
     print('Migrating assets from Munki Report...')
     run_migration()
-    print('Matching asset tags from old computer spreadsheet...')
-    match_asset_tags('assettag-serial-match.csv')
-
     logger.info('\n------------------------------------------------------------')
 
-    sys.exit(0)
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
